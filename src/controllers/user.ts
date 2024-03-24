@@ -66,6 +66,7 @@ export const getUser = TryCatch(
 export const deleteUser = TryCatch(
   async (req: Request, res: Response, next: NextFunction) => {
     const id = req.params.id;
+    console.log(id);
     const user = await User.findById(id);
     if (!user) return next(new ErrorHandler("User Not found", 400));
     await user.deleteOne();

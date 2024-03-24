@@ -50,6 +50,7 @@ export const getUser = TryCatch(async (req, res, next) => {
 // Delete user 🗑️
 export const deleteUser = TryCatch(async (req, res, next) => {
     const id = req.params.id;
+    console.log(id);
     const user = await User.findById(id);
     if (!user)
         return next(new ErrorHandler("User Not found", 400));
