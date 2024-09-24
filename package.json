@@ -5,10 +5,9 @@
   "main": "server.js",
   "type": "module",
   "scripts": {
-    "start": "node dist/server.js",
     "build": "npx tsc",
-    "watch": "npx tsc -w",
-    "dev": "nodemon dist/server.js"
+    "start": "nodemon dist/server.js",
+    "dev": "concurrently \"tsc --w\" \"nodemon dist/server.js\""
   },
   "keywords": [],
   "author": "",
