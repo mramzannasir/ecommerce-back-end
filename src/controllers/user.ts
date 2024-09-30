@@ -11,13 +11,14 @@ export const registerUser = TryCatch(
     res: Response,
     next: NextFunction
   ) => {
+    throw new Error("assss");
     const { name, email, password, photo, _id, dob } = req.body;
     let userExist = await User.findById(_id);
     let emailExist = await User.findOne({ email });
     if (userExist || emailExist) {
       res.status(200).json({
         success: true,
-        message: `User already Exist`,
+        message: `User already Exist Please Login`,
       });
     }
     if (!_id || !name || !email || !password || !photo || !dob) {

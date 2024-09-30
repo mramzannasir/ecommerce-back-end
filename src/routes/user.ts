@@ -1,4 +1,4 @@
-import { adminOnly } from "../middlewares/auth.js";
+import { adminOnly } from "../middlewares/admin.js";
 import {
   deleteUser,
   getAllUser,
