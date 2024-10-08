@@ -1,9 +1,8 @@
 import { User } from "../models/user.js";
 import { TryCatch } from "../middlewares/error.js";
 import ErrorHandler from "../utils/utility-class.js";
-// User Register 🚧
+// User Register
 export const registerUser = TryCatch(async (req, res, next) => {
-    throw new Error("assss");
     const { name, email, password, photo, _id, dob } = req.body;
     let userExist = await User.findById(_id);
     let emailExist = await User.findOne({ email });
@@ -14,7 +13,7 @@ export const registerUser = TryCatch(async (req, res, next) => {
         });
     }
     if (!_id || !name || !email || !password || !photo || !dob) {
-        next(new ErrorHandler("Please fill all felids", 400));
+        next(new ErrorHandler("Please fill all felids correctly!", 400));
     }
     const user = await User.create({
         name,
@@ -29,7 +28,7 @@ export const registerUser = TryCatch(async (req, res, next) => {
         message: `Welcome, ${user.name}!`,
     });
 });
-// Get all user 🚧
+// Get all user
 export const getAllUser = TryCatch(async (req, res, next) => {
     const users = await User.find({});
     res.status(200).json({
@@ -39,8 +38,8 @@ export const getAllUser = TryCatch(async (req, res, next) => {
 });
 // Get particular user 🚧
 export const getUser = TryCatch(async (req, res, next) => {
-    const id = req.params.id;
-    const user = await User.findById(id);
+    const _id = req.params.id;
+    const user = await User.findById(_id);
     if (!user)
         return next(new ErrorHandler("User Not found", 400));
     res.status(200).json({
@@ -50,9 +49,8 @@ export const getUser = TryCatch(async (req, res, next) => {
 });
 // Delete user 🗑️
 export const deleteUser = TryCatch(async (req, res, next) => {
-    const id = req.params.id;
-    console.log(id);
-    const user = await User.findById(id);
+    const _id = req.params.id;
+    const user = await User.findById(_id);
     if (!user)
         return next(new ErrorHandler("User Not found", 400));
     await user.deleteOne();
