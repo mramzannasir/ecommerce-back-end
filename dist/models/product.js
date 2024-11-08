@@ -15,10 +15,15 @@ const schema = new mongoose.Schema({
     category: {
         type: String,
         required: [true, "Category is required"],
+        trim: true,
     },
     price: {
         type: String,
         required: [true, "Price is required"],
+    },
+    stock: {
+        type: String,
+        required: [true, "Stock is required"],
     },
 });
 export const Product = mongoose.model("Product", schema);
