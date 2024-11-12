@@ -5,5 +5,5 @@ export const connectDB = () => {
         dbName: "e-commerce-app",
     })
         .then((c) => console.log(`DB connected to ${c.connection.host}`))
-        .catch((e) => console.log(e, "Something went wrong to connect database"));
+        .catch((e) => console.log(e, "Something  went wrong to connect database oh no"));
 };
