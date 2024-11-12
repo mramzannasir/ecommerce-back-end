@@ -25,5 +25,9 @@ const schema = new mongoose.Schema({
         type: String,
         required: [true, "Stock is required"],
     },
+    createdAt: {
+        type: Date,
+        default: Date.now,
+    },
 });
 export const Product = mongoose.model("Product", schema);
