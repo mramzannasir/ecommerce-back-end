@@ -46,3 +46,9 @@ export const getCategories = TryCatch(async (req, res, next) => {
     categories,
   });
 });
+
+export const getAdminProducts = TryCatch(async (req, res, next) => {
+  const products = await Product.find({});
+  if (!products) return next(new ErrorHandler("Products not found", 404));
+  return res.status(200).json({ success: true, products });
+});
