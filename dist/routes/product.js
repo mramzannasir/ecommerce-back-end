@@ -3,6 +3,7 @@
  */
 import express from "express";
 import { createProducts, getAdminProducts, getCategories, getLatestProducts, } from "../controllers/products.js";
+import { adminOnly } from "../middlewares/admin.js";
 import { singleUpload } from "../middlewares/multer.js";
 /**
  * Router for products
@@ -27,6 +28,5 @@ app.get("/categories", getCategories);
  * GET /products/admin-products
  * Get all products for admin
  */
-app.get("/admin-products", getAdminProducts);
+app.get("/admin-products", adminOnly, getAdminProducts);
 export default app;
-/******  39ac8cde-ff05-4a46-b9db-a19b12b126dc  *******/
