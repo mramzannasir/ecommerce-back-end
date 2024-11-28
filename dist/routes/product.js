@@ -28,5 +28,5 @@ app.get("/categories", getCategories);
  * GET /products/admin-products
  * Get all products for admin
  */
-app.get("/admin-products", adminOnly, getAdminProducts);
+app.get("/admin-products/:id", adminOnly, getAdminProducts);
 export default app;
