@@ -41,7 +41,7 @@ export const getAllUser = TryCatch(async (req, res, next) => {
   });
 });
 
-// Get particular user 
+// Get particular user
 export const getUser = TryCatch(async (req, res, next) => {
   const _id = req.params.id;
   const user = await User.findById(_id);
