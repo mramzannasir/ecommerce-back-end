@@ -35,6 +35,7 @@ export const registerUser = TryCatch(async (req, res, next) => {
 // Get all user
 export const getAllUser = TryCatch(async (req, res, next) => {
   const users = await User.find({});
+  if (!users) return next(new ErrorHandler("Users Not found", 400));
   res.status(200).json({
     success: true,
     users,
