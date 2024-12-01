@@ -80,12 +80,12 @@ export interface BaseQueryType {
     $options: string;
   };
   price?: {
-    $gte: number;
-    $lte: number;
+    $gt: number;
+    $lt: number;
   };
   stock?: {
-    $gte: string;
-    $lte: string;
+    $gt: string;
+    $lt: string;
   };
   search?: {
     $regex: string;

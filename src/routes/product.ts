@@ -23,6 +23,7 @@ const app = express.Router();
 /**
  * POST /products/new
  * Create a new product
+ */
 app.post("/new", singleUpload, createProducts);
 
 /**
@@ -47,6 +48,6 @@ app.delete("/delete/:id", deleteProduct);
 app.put("/update/:id", singleUpload, updateProduct);
 
 app.get("/single-product/:id", getSingleProduct);
-app.get("/filter", getAllFilteredProduct);
+app.get("/all", getAllFilteredProduct);
 
 export default app;

@@ -22,7 +22,7 @@ export const createProducts = TryCatch(
     const photo = req.file;
 
     if (!photo) return next(new ErrorHandler("Photo is required", 400));
-
+    return next(new ErrorHandler("Product name already exist", 400));
     const data = await Product.create({
       name,
       description,
@@ -110,20 +110,9 @@ export const getSingleProduct = TryCatch(async (req, res, next) => {
 
 export const getAllFilteredProduct = TryCatch(
   async (req: Request<{}, {}, FilterQueryType>, res, next) => {
-    const {
-      name,
-      category,
-      price,
-      stock,
-      search,
-      sort,
-      limit,
-      minPrice,
-      maxPrice,
-    } = req.query;
-
+    const { category, minPrice, maxPrice, stock, search, sort } = req.query;
     const page = Number(req.query.page) || 1;
-    const limitVal = Number(process.env.PRODUCTS_PER_PAGE) || 10;
+    const limitVal = Number(process.env.PRODUCTS_PER_PAGE) || 8;
     const skip = (page - 1) * limitVal;
 
     const baseQuery: BaseQueryType = {};
@@ -133,10 +122,10 @@ export const getAllFilteredProduct = TryCatch(
         $options: "i",
       };
     }
-    if (price) {
+    if (minPrice || maxPrice) {
       baseQuery.price = {
-        $gte: Number(minPrice),
-        $lte: Number(maxPrice),
+        $gt: Number(minPrice),
+        $lt: Number(maxPrice),
       };
     }
     if (category) {
@@ -145,19 +134,25 @@ export const getAllFilteredProduct = TryCatch(
         $options: "i",
       };
     }
-
-    const products = await Product.find({ baseQuery })
+    const productsPromise = Product.find(baseQuery)
       .sort(sort && { price: sort === "asc" ? 1 : -1 })
       .limit(limitVal)
       .skip(skip);
 
+    const [products, filteredProducts] = await Promise.all([
+      productsPromise,
+      Product.find(baseQuery),
+    ]);
+
+    const totalPage = Math.ceil(filteredProducts.length / limitVal);
     res.status(200).json({
       success: true,
       products,
       pagination: {
         page,
         limit: limitVal,
-        total: products.length,
+        totalProducts: products.length,
+        totalPage: totalPage,
       },
     });
   }
