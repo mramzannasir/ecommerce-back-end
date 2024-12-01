@@ -1,9 +1,15 @@
 /*************  ✨ Codeium Command 🌟  *************/
 import { NextFunction, Request, Response } from "express";
 import { TryCatch } from "../middlewares/error.js";
-import { NewProductRequestBody } from "../types/types.js";
+import {
+  BaseQueryType,
+  FilterQueryType,
+  NewProductRequestBody,
+} from "../types/types.js";
 import { Product } from "../models/product.js";
 import ErrorHandler from "../utils/utility-class.js";
+import { rm } from "fs";
+import mongoose from "mongoose";
 
 export const createProducts = TryCatch(
   async (
@@ -52,3 +58,107 @@ export const getAdminProducts = TryCatch(async (req, res, next) => {
   if (!products) return next(new ErrorHandler("Products not found", 404));
   return res.status(200).json({ success: true, products });
 });
+
+export const deleteProduct = TryCatch(async (req, res, next) => {
+  const _id = req.params.id;
+  const product = await Product.findById(_id);
+  if (!product) return next(new ErrorHandler("Product not found", 404));
+  rm(product.photo!, () => {
+    console.log("File deleted");
+  });
+  await product.deleteOne();
+  return res
+    .status(200)
+    .json({ success: true, message: "Product deleted successfully" });
+});
+
+export const updateProduct = TryCatch(async (req, res, next) => {
+  const _id = req.params.id;
+  const { name, description, category, price, stock } = req.body;
+  const photo = req.file;
+  if (!mongoose.Types.ObjectId.isValid(_id)) {
+    return next(new ErrorHandler("Invalid product ID format", 400));
+  }
+  const product = await Product.findById(_id);
+  if (!product) return next(new ErrorHandler("Product not found", 404));
+  if (photo) {
+    rm(product.photo!, () => {
+      console.log("File deleted");
+    });
+    product.photo = photo.path;
+  }
+  if (name) product.name = name;
+  if (description) product.description = description;
+  if (category) product.category = category;
+  if (price) product.price = price;
+  if (stock) product.stock = stock;
+  await product.save();
+  return res
+    .status(200)
+    .json({ success: true, message: "Product updated successfully", product });
+});
+
+export const getSingleProduct = TryCatch(async (req, res, next) => {
+  const _id = req.params.id;
+  if (!mongoose.Types.ObjectId.isValid(_id)) {
+    return next(new ErrorHandler("Invalid product ID format", 400));
+  }
+  const product = await Product.findById(_id);
+  if (!product) return next(new ErrorHandler("Product not found", 404));
+  return res.status(200).json({ success: true, product });
+});
+
+export const getAllFilteredProduct = TryCatch(
+  async (req: Request<{}, {}, FilterQueryType>, res, next) => {
+    const {
+      name,
+      category,
+      price,
+      stock,
+      search,
+      sort,
+      limit,
+      minPrice,
+      maxPrice,
+    } = req.query;
+
+    const page = Number(req.query.page) || 1;
+    const limitVal = Number(process.env.PRODUCTS_PER_PAGE) || 10;
+    const skip = (page - 1) * limitVal;
+
+    const baseQuery: BaseQueryType = {};
+    if (search) {
+      baseQuery.name = {
+        $regex: String(search),
+        $options: "i",
+      };
+    }
+    if (price) {
+      baseQuery.price = {
+        $gte: Number(minPrice),
+        $lte: Number(maxPrice),
+      };
+    }
+    if (category) {
+      baseQuery.category = {
+        $regex: String(category),
+        $options: "i",
+      };
+    }
+
+    const products = await Product.find({ baseQuery })
+      .sort(sort && { price: sort === "asc" ? 1 : -1 })
+      .limit(limitVal)
+      .skip(skip);
+
+    res.status(200).json({
+      success: true,
+      products,
+      pagination: {
+        page,
+        limit: limitVal,
+        total: products.length,
+      },
+    });
+  }
+);
