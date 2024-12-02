@@ -10,6 +10,7 @@ import { Product } from "../models/product.js";
 import ErrorHandler from "../utils/utility-class.js";
 import { rm } from "fs";
 import mongoose from "mongoose";
+import { nodeCache } from "../app.js";
 
 export const createProducts = TryCatch(
   async (
@@ -39,8 +40,13 @@ export const createProducts = TryCatch(
 );
 
 export const getLatestProducts = TryCatch(async (req, res, next) => {
-  const products = await Product.find({}).sort({ createdAt: -1 }).limit(5);
-  if (!products) return next(new ErrorHandler("Products not found", 404));
+  let products;
+  if (nodeCache.has("latest-products")) {
+    products = JSON.parse(nodeCache.get("latest-products") as string);
+  } else {
+    products = await Product.find({}).sort({ createdAt: -1 }).limit(5);
+    if (!products) return next(new ErrorHandler("Products not found", 404));
+  }
   return res.status(200).json({ success: true, products });
 });
 
