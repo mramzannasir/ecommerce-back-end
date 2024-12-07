@@ -174,12 +174,17 @@ export const getSingleProduct = TryCatch(async (req, res, next) => {
     if (!mongoose.Types.ObjectId.isValid(_id)) {
         return next(new ErrorHandler("Invalid product ID format", 400));
     }
-    const product = await Product.findById(_id);
-    if (!product) {
-        return next(new ErrorHandler("Product not found", 404));
+    let product;
+    if (nodeCache.has(_id)) {
+        product = JSON.parse(nodeCache.get(_id));
     }
-    if (!product)
-        return next(new ErrorHandler("Product not found", 404));
+    else {
+        product = await Product.findById(_id);
+        if (!product) {
+            return next(new ErrorHandler("Product not found", 404));
+        }
+        nodeCache.set(_id, JSON.stringify(product));
+    }
     return res.status(200).json({ success: true, product });
 });
 /**
