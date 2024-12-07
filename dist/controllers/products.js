@@ -62,12 +62,16 @@ export const getLatestProducts = TryCatch(async (req, res, next) => {
  * @returns {Promise<void>}
  */
 export const getCategories = TryCatch(async (req, res, next) => {
-    const categories = await Product.distinct("category");
-    if (!categories) {
-        return next(new ErrorHandler("Categories not found", 404));
+    let categories;
+    if (nodeCache.has("categories")) {
+        categories = JSON.parse(nodeCache.get("categories"));
     }
-    if (!categories)
-        return next(new ErrorHandler("Categories not found", 404));
+    else {
+        categories = await Product.distinct("category");
+        if (!categories)
+            return next(new ErrorHandler("Categories not found", 404));
+        nodeCache.set("categories", JSON.stringify(categories));
+    }
     return res.status(200).json({
         success: true,
         categories,
@@ -81,12 +85,17 @@ export const getCategories = TryCatch(async (req, res, next) => {
  * @returns {Promise<void>}
  */
 export const getAdminProducts = TryCatch(async (req, res, next) => {
-    const products = await Product.find({});
-    if (!products) {
-        return next(new ErrorHandler("Products not found", 404));
+    let products;
+    if (nodeCache.has("admin-products")) {
+        products = JSON.parse(nodeCache.get("admin-products"));
     }
-    if (!products)
-        return next(new ErrorHandler("Products not found", 404));
+    else {
+        products = await Product.find({});
+        if (!products) {
+            return next(new ErrorHandler("Products not found", 404));
+        }
+        nodeCache.set("admin-products", JSON.stringify(products));
+    }
     return res.status(200).json({ success: true, products });
 });
 /**
