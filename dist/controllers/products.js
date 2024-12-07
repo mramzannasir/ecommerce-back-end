@@ -4,12 +4,21 @@ import ErrorHandler from "../utils/utility-class.js";
 import { rm } from "fs";
 import mongoose from "mongoose";
 import { nodeCache } from "../app.js";
+/**
+ * @description Create a new product
+ * @param {Request} req - Request object
+ * @param {Response} res - Response object
+ * @param {NextFunction} next - Next function
+ * @returns {Promise<void>}
+ */
 export const createProducts = TryCatch(async (req, res, next) => {
     const { name, description, category, price, stock } = req.body;
     const photo = req.file;
-    if (!photo)
+    if (!photo) {
         return next(new ErrorHandler("Photo is required", 400));
-    return next(new ErrorHandler("Product name already exist", 400));
+    }
+    if (await Product.findOne({ name }))
+        return next(new ErrorHandler("Product already exist", 400));
     const data = await Product.create({
         name,
         description,
@@ -22,6 +31,13 @@ export const createProducts = TryCatch(async (req, res, next) => {
         .status(201)
         .json({ success: true, message: "Product Created Successfully", data });
 });
+/**
+ * @description Get all products
+ * @param {Request} req - Request object
+ * @param {Response} res - Response object
+ * @param {NextFunction} next - Next function
+ * @returns {Promise<void>}
+ */
 export const getLatestProducts = TryCatch(async (req, res, next) => {
     let products;
     if (nodeCache.has("latest-products")) {
@@ -29,13 +45,27 @@ export const getLatestProducts = TryCatch(async (req, res, next) => {
     }
     else {
         products = await Product.find({}).sort({ createdAt: -1 }).limit(5);
+        if (!products) {
+            return next(new ErrorHandler("Products not found", 404));
+        }
+        nodeCache.set("latest-products", JSON.stringify(products));
         if (!products)
             return next(new ErrorHandler("Products not found", 404));
     }
     return res.status(200).json({ success: true, products });
 });
+/**
+ * @description Get all categories
+ * @param {Request} req - Request object
+ * @param {Response} res - Response object
+ * @param {NextFunction} next - Next function
+ * @returns {Promise<void>}
+ */
 export const getCategories = TryCatch(async (req, res, next) => {
     const categories = await Product.distinct("category");
+    if (!categories) {
+        return next(new ErrorHandler("Categories not found", 404));
+    }
     if (!categories)
         return next(new ErrorHandler("Categories not found", 404));
     return res.status(200).json({
@@ -43,15 +73,35 @@ export const getCategories = TryCatch(async (req, res, next) => {
         categories,
     });
 });
+/**
+ * @description Get all products for admin
+ * @param {Request} req - Request object
+ * @param {Response} res - Response object
+ * @param {NextFunction} next - Next function
+ * @returns {Promise<void>}
+ */
 export const getAdminProducts = TryCatch(async (req, res, next) => {
     const products = await Product.find({});
+    if (!products) {
+        return next(new ErrorHandler("Products not found", 404));
+    }
     if (!products)
         return next(new ErrorHandler("Products not found", 404));
     return res.status(200).json({ success: true, products });
 });
+/**
+ * @description Delete a product
+ * @param {Request} req - Request object
+ * @param {Response} res - Response object
+ * @param {NextFunction} next - Next function
+ * @returns {Promise<void>}
+ */
 export const deleteProduct = TryCatch(async (req, res, next) => {
     const _id = req.params.id;
     const product = await Product.findById(_id);
+    if (!product) {
+        return next(new ErrorHandler("Product not found", 404));
+    }
     if (!product)
         return next(new ErrorHandler("Product not found", 404));
     rm(product.photo, () => {
@@ -62,6 +112,13 @@ export const deleteProduct = TryCatch(async (req, res, next) => {
         .status(200)
         .json({ success: true, message: "Product deleted successfully" });
 });
+/**
+ * @description Update a product
+ * @param {Request} req - Request object
+ * @param {Response} res - Response object
+ * @param {NextFunction} next - Next function
+ * @returns {Promise<void>}
+ */
 export const updateProduct = TryCatch(async (req, res, next) => {
     const _id = req.params.id;
     const { name, description, category, price, stock } = req.body;
@@ -70,6 +127,9 @@ export const updateProduct = TryCatch(async (req, res, next) => {
         return next(new ErrorHandler("Invalid product ID format", 400));
     }
     const product = await Product.findById(_id);
+    if (!product) {
+        return next(new ErrorHandler("Product not found", 404));
+    }
     if (!product)
         return next(new ErrorHandler("Product not found", 404));
     if (photo) {
@@ -93,16 +153,33 @@ export const updateProduct = TryCatch(async (req, res, next) => {
         .status(200)
         .json({ success: true, message: "Product updated successfully", product });
 });
+/**
+ * @description Get a single product
+ * @param {Request} req - Request object
+ * @param {Response} res - Response object
+ * @param {NextFunction} next - Next function
+ * @returns {Promise<void>}
+ */
 export const getSingleProduct = TryCatch(async (req, res, next) => {
     const _id = req.params.id;
     if (!mongoose.Types.ObjectId.isValid(_id)) {
         return next(new ErrorHandler("Invalid product ID format", 400));
     }
     const product = await Product.findById(_id);
+    if (!product) {
+        return next(new ErrorHandler("Product not found", 404));
+    }
     if (!product)
         return next(new ErrorHandler("Product not found", 404));
     return res.status(200).json({ success: true, product });
 });
+/**
+ * @description Get all filtered products
+ * @param {Request} req - Request object
+ * @param {Response} res - Response object
+ * @param {NextFunction} next - Next function
+ * @returns {Promise<void>}
+ */
 export const getAllFilteredProduct = TryCatch(async (req, res, next) => {
     const { category, minPrice, maxPrice, stock, search, sort } = req.query;
     const page = Number(req.query.page) || 1;
