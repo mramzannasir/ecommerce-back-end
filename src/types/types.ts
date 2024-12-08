@@ -92,3 +92,9 @@ export interface BaseQueryType {
     $options: string;
   };
 }
+
+export type invalidateCacheProps = {
+  product?: boolean;
+  order?: boolean;
+  admin?: boolean;
+};

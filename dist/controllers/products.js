@@ -4,6 +4,7 @@ import ErrorHandler from "../utils/utility-class.js";
 import { rm } from "fs";
 import mongoose from "mongoose";
 import { nodeCache } from "../app.js";
+import invalidateCache from "../utils/invalidateCache.js";
 /**
  * @description Create a new product
  * @param {Request} req - Request object
@@ -27,6 +28,7 @@ export const createProducts = TryCatch(async (req, res, next) => {
         photo: photo?.path,
         stock,
     });
+    await invalidateCache({ product: true });
     return res
         .status(201)
         .json({ success: true, message: "Product Created Successfully", data });
@@ -117,6 +119,7 @@ export const deleteProduct = TryCatch(async (req, res, next) => {
         console.log("File deleted");
     });
     await product.deleteOne();
+    await invalidateCache({ product: true });
     return res
         .status(200)
         .json({ success: true, message: "Product deleted successfully" });
@@ -158,6 +161,7 @@ export const updateProduct = TryCatch(async (req, res, next) => {
     if (stock)
         product.stock = stock;
     await product.save();
+    await invalidateCache({ product: true });
     return res
         .status(200)
         .json({ success: true, message: "Product updated successfully", product });
@@ -175,15 +179,15 @@ export const getSingleProduct = TryCatch(async (req, res, next) => {
         return next(new ErrorHandler("Invalid product ID format", 400));
     }
     let product;
-    if (nodeCache.has(_id)) {
-        product = JSON.parse(nodeCache.get(_id));
+    if (nodeCache.has(`product-${_id}`)) {
+        product = JSON.parse(nodeCache.get(`product-${_id}`));
     }
     else {
         product = await Product.findById(_id);
         if (!product) {
             return next(new ErrorHandler("Product not found", 404));
         }
-        nodeCache.set(_id, JSON.stringify(product));
+        nodeCache.set(`product-${_id}`, JSON.stringify(product));
     }
     return res.status(200).json({ success: true, product });
 });
