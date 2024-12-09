@@ -16,7 +16,7 @@
     "@faker-js/faker": "^9.2.0",
     "@types/uuid": "^10.0.0",
     "concurrently": "^9.0.1",
-    "dotenv": "^16.4.5",
+    "dotenv": "^16.4.7",
     "express": "^4.19.1",
     "i": "^0.3.7",
     "mongoose": "^8.2.2",
