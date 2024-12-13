@@ -23,7 +23,7 @@ const schema = new mongoose.Schema({
     required: [true, "Price is required"],
   },
   stock: {
-    type: String,
+    type: Number,
     required: [true, "Stock is required"],
   },
   createdAt: {
