@@ -6,6 +6,7 @@ import { Order } from "../models/order.js";
 import reduceStock from "../utils/reduceStock.js";
 import invalidateCache from "../utils/invalidateCache.js";
 import ErrorHandler from "../utils/utility-class.js";
+import { nodeCache } from "../app.js";
 
 export const newOrder = TryCatch(
   async (req: Request<{}, {}, NewOrderRequestBody>, res, next) => {
@@ -55,3 +56,18 @@ export const newOrder = TryCatch(
     });
   }
 );
+
+export const myOrders = TryCatch(async (req, res, next) => {
+  const id = req.params.id;
+  let order = [];
+  console.log("yes getting", id);
+  if (nodeCache.has(`orders-${id}`)) {
+    order = JSON.parse(nodeCache.get(`orders-${id}`) as string);
+  } else {
+    order = await Order.find({ user: id });
+    nodeCache.set(`orders-${id}`, JSON.stringify(order));
+  }
+  if (order.length === 0)
+    return next(new ErrorHandler("No orders found for this user", 404));
+  return res.status(200).json({ success: true, order });
+});
