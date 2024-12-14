@@ -22,10 +22,10 @@ const invalidateCache = async ({
     nodeCache.del(productKeys);
   }
   if (order) {
-    console.log("order cache is invalidated");
+    // console.log("order cache is invalidated");
   }
   if (admin) {
-    console.log("admin cache is invalidated");
+    // console.log("admin cache is invalidated");
   }
 };
 
