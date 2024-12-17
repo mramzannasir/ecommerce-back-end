@@ -104,10 +104,10 @@ export const myOrders = TryCatch(async (req, res, next) => {
 export const allOrders = TryCatch(async (req, res) => {
   let orders = [];
   if (nodeCache.has("orders")) {
-    orders = JSON.parse(nodeCache.get("orders") as string).exec();
+    orders = JSON.parse(nodeCache.get("orders") as string);
   } else {
-    orders = await Order.find().populate("user");
-    // nodeCache.set("orders", JSON.stringify(orders));
+    orders = await Order.find().populate("user", "name");
+    nodeCache.set("orders", JSON.stringify(orders));
   }
   res.status(200).json({ success: true, orders });
 });
