@@ -101,4 +101,13 @@ export const myOrders = TryCatch(async (req, res, next) => {
   return res.status(200).json({ success: true, order });
 });
 
-/******  24504598-e754-46ef-9265-4ddc14bc42e0  *******/
+export const allOrders = TryCatch(async (req, res) => {
+  let orders = [];
+  if (nodeCache.has("orders")) {
+    orders = JSON.parse(nodeCache.get("orders") as string).exec();
+  } else {
+    orders = await Order.find().populate("user");
+    // nodeCache.set("orders", JSON.stringify(orders));
+  }
+  res.status(200).json({ success: true, orders });
+});
