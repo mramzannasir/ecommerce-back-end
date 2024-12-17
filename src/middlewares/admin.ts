@@ -3,7 +3,7 @@ import ErrorHandler from "../utils/utility-class.js";
 import { TryCatch } from "./error.js";
 
 export const adminOnly = TryCatch(async (req, res, next) => {
-  const _id = req.params.id;
+  const { _id } = req.query;
   if (!_id) return next(new ErrorHandler("Please Login First as a admin", 401));
   const user = await User.findById(_id);
   if (!user) return next(new ErrorHandler("You are not found as a admin", 404));
